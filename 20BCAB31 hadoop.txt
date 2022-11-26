@@ -1,0 +1,116 @@
+APACHE PIG
+
+•	Hadoop fs -ls
+•	Hadoop fs -mkdir new
+•	hadoop fs -copyFromLocal  /home/cloudera/Desktop/emp.csv new
+•	Hadoop fs -ls new
+•	pig
+•	ls
+•	cd new
+•	A = load ‘emp.csv' using PigStorage(',') as (eid:int,ename:chararray,epos:chararray,esal:int,ecom:int,edpno:int);
+•	dump A;
+•	B = filter A by edpno==20;
+•	Z = filter A by edpno==20 and epos=='MANAGER’,
+•	C = limit B 3;
+•	D = order A by esal desc;
+•	store B into '/user/cloudera/new/pigout1’ using PigStorage(',’);
+•	ls
+•	cd Pigout1
+•	cat part-m-00000
+•	E = foreach A generate eid;
+•	Dump E
+•	F = foreach A generate *, ecom*2 as Bonus,esal*5 as Incentive;
+•	dump F
+•	G = foreach A generate SUBSTRING(ename,0,4);
+•	dump F;
+•	 H = foreach A generate $0,$1;
+•	I = group A by edpno;
+•	J = foreach I generate group as edpno, COUNT($1) as count;
+•	K = foreach A generate MAX(A.esal) as maxsal,MIN(A.esal) as minsal, SUM(A.esal) as sumsal, COUNT($1) as count;
+•	L = group A by (edpno, epos)
+•	SPLIT A into B if edpno==10, C if edpno==20, D if epos=='MANAGER';
+•	JOINING
+•	  A = load 'emp.csv' using PigStorage(',') as (eid:int,ename:chararray,epos:chararray,esal:int,ecom:int,edpno:int);
+•	   B = load 'dept.csv' using PigStorage(',') as (edpno:int,epos:chararray,ecity:chararray);
+•	   C= JOIN A by edpno,B by edpno;
+•	   D= foreach C generate A::eid,B::epos;
+•	   E = JOIN A by edpno RIGHT OUTER, B by edpno;
+•	   Z = JOIN A by edpno LEFT OUTER, B by edpno;
+•	WORD COUNT
+•	lines= load'sample.txt' as (line:chararray);
+•	lines= load 'sample.txt' as (line:chararray);
+•	lines= load'sample.txt' as (line:chararray);
+•	token = foreach lines generate TOKENIZE(line);
+•	flats = foreach token generate FLATTEN($0);
+•	 group_words= group flats by $0;
+•	  count = foreach group_words generate group as word,COUNT($1) as word_occ;
+
+
+HIVE
+
+
+to view the all the databases
+show databases;
+to creat a database
+create database if not exists A;
+to manipulate the database we should get into it ,for it we'll should use this query
+Use A;
+Check location from hdfs
+hadoop fs -ls /user/hive/warehouse
+Managed tables
+create table if not exists emp(empno int, ename string, sal float, comm float, dpno int) row format delimited fields terminated by ',’;
+To get the structure of the tables
+describe emp;
+To load the data from a file into the table
+load data local inpath '/home/cloudera/Desktop/new/emp.csv' into table emp;
+To view all the content in the table
+Select * from emp;
+To add External Tables
+create external table  ext_emp1(empno int, ename string, sal float, comm float, dpno int) row format delimited fields terminated by ',’ location '/user/cloudera/new/emp’;
+While giving path we have to give only directory path not file name
+Here, table will be in given hdfs path.
+
+create external table  ext_emp2(empno int, ename string, sal float, comm float, dpno int) row format delimited fields terminated by ‘,’;
+Table will be stored under /user/hive/warehouse/A.db/ext_emp2/emp
+
+load data local inpath '/home/cloudera/Desktop/new/empdata' into table ext_emp2;
+set hive.exec.dynamic.partition.mode;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+create external table emp_dept (empno int, ename string, sal float, comm float) partitioned by (dpno int) row format delimited fields terminated by ',’;
+insert into table emp_dept partition(dpno) select * from emp;
+
+Check
+hadoop fs -ls /user/hive/warehouse/A.db
+create table dept_buckk(empno int, ename string, sal float, comm float, dpno int)  clustered by (dpno) into 3 buckets row format delimited fields terminated by ‘,’;
+set hive.enforce.bucketing = true;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
